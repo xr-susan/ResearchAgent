@@ -76,8 +76,8 @@ class TaskExecutor:
             metadata={"type": task_type, "params": params},
         )
 
-        # Start async execution
-        asyncio.create_task(self._execute_task(task["id"], task_type, params))
+        async_task = asyncio.create_task(self._execute_task(task["id"], task_type, params))
+        self._running_tasks[task["id"]] = async_task
 
         logger.info(f"Task submitted: {task['id']} - {title}")
         return task
@@ -178,10 +178,9 @@ class TaskExecutor:
         if not task:
             return False
 
-        if task["status"] != TaskStatus.RUNNING:
+        if task["status"] not in (TaskStatus.PENDING, TaskStatus.RUNNING):
             return False
 
-        # Cancel the asyncio task if it exists
         async_task = self._running_tasks.get(task_id)
         if async_task and not async_task.done():
             async_task.cancel()

@@ -84,6 +84,11 @@ class Settings(BaseSettings):
         """Check if running in development mode."""
         return self.app_env == "development"
 
+    @property
+    def default_model(self) -> str:
+        """Return the model for the selected provider."""
+        return self.anthropic_model if self.llm_provider.lower() == "anthropic" else self.openai_model
+
 
 # Global settings instance
 settings = Settings()

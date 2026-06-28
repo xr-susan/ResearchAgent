@@ -11,6 +11,7 @@ from typing import Any, Optional
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.tools import BaseTool
+from langchain_anthropic import ChatAnthropic
 from langchain_openai import ChatOpenAI
 
 from backend.memory.conversation_memory import ConversationMemory
@@ -54,41 +55,42 @@ class BaseAgent(ABC):
         self.system_prompt = system_prompt or self._default_system_prompt()
         self.max_iterations = max_iterations
 
-        # Initialize LLM
-        self.model_name = model_name or settings.openai_model
-        self.llm = ChatOpenAI(
+        self.model_name = model_name or settings.default_model
+        self.llm = self._create_llm(temperature)
+        self.llm_with_tools = self.llm.bind_tools(tools) if self.llm else None
+
+        logger.info(f"Initialized {self.__class__.__name__} with {len(tools)} tools")
+
+    def _create_llm(self, temperature: float):
+        """Create the configured chat model, or defer until credentials are available."""
+        provider = settings.llm_provider.lower()
+
+        if provider == "anthropic":
+            if not settings.anthropic_api_key:
+                logger.warning("ANTHROPIC_API_KEY is not configured; agent calls will return a setup message")
+                return None
+            return ChatAnthropic(
+                model=self.model_name,
+                temperature=temperature,
+                api_key=settings.anthropic_api_key,
+            )
+
+        if not settings.openai_api_key:
+            logger.warning("OPENAI_API_KEY is not configured; agent calls will return a setup message")
+            return None
+
+        return ChatOpenAI(
             model=self.model_name,
             temperature=temperature,
             api_key=settings.openai_api_key,
         )
 
-        # Bind tools to LLM for function calling
-        self.llm_with_tools = self.llm.bind_tools(tools)
-
-        logger.info(f"Initialized {self.__class__.__name__} with {len(tools)} tools")
-
     def _default_system_prompt(self) -> str:
         """Get the default system prompt."""
-        return """You are ResearchAgent, an intelligent AI research assistant.
+        return """You are ResearchAgent, a practical research assistant.
 
-Your capabilities include:
-- Searching the web for current information
-- Analyzing documents (PDF, CSV, Excel, etc.)
-- Scraping and extracting web page content
-- Performing data analysis and generating visualizations
-- Generating structured research reports
-
-When given a research task:
-1. Break it down into smaller, manageable subtasks
-2. Use the appropriate tools for each subtask
-3. Synthesize information from multiple sources
-4. Present findings in a clear, structured format
-
-Always:
-- Cite your sources when presenting information
-- Use data and evidence to support conclusions
-- Acknowledge uncertainty when information is incomplete
-- Provide actionable insights and recommendations
+Use tools when they add evidence. Keep answers direct, cite sources when you use them,
+and separate confirmed facts from interpretation or uncertainty.
 """
 
     async def run(self, user_input: str, stream: bool = False) -> str:
@@ -102,11 +104,16 @@ Always:
             Agent's final response.
         """
         logger.info(f"Agent processing: {user_input[:100]}...")
-
-        # Add user message to memory
         await self.memory.add_user_message(user_input)
 
-        # Build messages for LLM
+        if not self.llm_with_tools:
+            final_response = (
+                "The agent is running, but no LLM API key is configured yet. "
+                "Add OPENAI_API_KEY or ANTHROPIC_API_KEY to your .env file, then restart the server."
+            )
+            await self.memory.add_assistant_message(final_response)
+            return final_response
+
         messages = self._build_messages(user_input)
 
         # ReAct loop

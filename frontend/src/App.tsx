@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Search, FileText, BarChart3, Bot, User, Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import { Send, Bot, User, Loader2 } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -8,7 +9,7 @@ interface Message {
   timestamp: Date;
 }
 
-const API_BASE = 'http://localhost:8000/api';
+const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000/api';
 
 function App() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -45,7 +46,10 @@ function App() {
         }),
       });
 
-      if (!response.ok) throw new Error('Request failed');
+      if (!response.ok) {
+        const detail = await response.text();
+        throw new Error(detail || 'Request failed');
+      }
 
       const data = await response.json();
       setConversationId(data.conversation_id);
@@ -62,7 +66,7 @@ function App() {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.',
+        content: 'The request could not be completed. Check that the API server is running and configured.',
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -172,11 +176,14 @@ function App() {
               backgroundColor: msg.role === 'user' ? '#3b82f6' : 'white',
               color: msg.role === 'user' ? 'white' : '#1e293b',
               boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-              whiteSpace: 'pre-wrap',
               lineHeight: 1.6,
               fontSize: '14px',
             }}>
-              {msg.content}
+              {msg.role === 'assistant' ? (
+                <ReactMarkdown>{msg.content}</ReactMarkdown>
+              ) : (
+                msg.content
+              )}
             </div>
             {msg.role === 'user' && (
               <div style={{

@@ -44,7 +44,7 @@ class ResearchCLI:
         self.memory = ConversationMemory(self.storage)
         self.agent = ResearchAgent(memory=self.memory)
 
-        console.print("[green]✓ ResearchAgent initialized[/green]")
+        console.print("[green]ResearchAgent initialized[/green]")
 
     async def cleanup(self):
         """Clean up resources."""
@@ -54,9 +54,9 @@ class ResearchCLI:
     def print_welcome(self):
         """Display welcome message."""
         welcome = """
-# 🔬 ResearchAgent - AI Research Assistant
+# ResearchAgent
 
-Welcome! I can help you with:
+I can help you with:
 - **Web Research** - Search for information on any topic
 - **Document Analysis** - Analyze PDF, CSV, Excel files
 - **Data Analysis** - Statistical analysis and visualizations
@@ -84,7 +84,7 @@ Welcome! I can help you with:
         cmd = command.strip().lower()
 
         if cmd == "/quit" or cmd == "/exit":
-            console.print("[yellow]Goodbye! 👋[/yellow]")
+            console.print("[yellow]Goodbye.[/yellow]")
             return False
 
         elif cmd == "/new":
@@ -132,7 +132,7 @@ Welcome! I can help you with:
         console.print()
         console.print(Panel(
             Markdown(response),
-            title="🤖 ResearchAgent",
+            title="ResearchAgent",
             border_style="blue",
         ))
         console.print()

@@ -94,7 +94,7 @@ class DataAnalysisTool(BaseTool):
             # Format output
             output = f"**Data Analysis Results:** {path.name}\n\n"
             output += f"**Query:** {analysis_query}\n\n"
-            output += f"**Dataset Info:** {len(df)} rows × {len(df.columns)} columns\n\n"
+            output += f"**Dataset Info:** {len(df)} rows x {len(df.columns)} columns\n\n"
             output += result
 
             if chart_path:
@@ -120,7 +120,7 @@ class DataAnalysisTool(BaseTool):
         ext = path.suffix.lower()
         try:
             if ext == '.csv':
-                return pd.read_csv(str(path), parse_dates=True, infer_datetime_format=True)
+                return pd.read_csv(str(path))
             elif ext in ('.xlsx', '.xls'):
                 return pd.read_excel(str(path))
             else:
@@ -220,7 +220,7 @@ class DataAnalysisTool(BaseTool):
                     pairs.append((corr.columns[i], corr.columns[j], corr.iloc[i, j]))
             pairs.sort(key=lambda x: abs(x[2]), reverse=True)
             for col1, col2, r in pairs[:10]:
-                results.append(f"- {col1} ↔ {col2}: r = {r:.3f}")
+                results.append(f"- {col1} <-> {col2}: r = {r:.3f}")
 
         return "\n".join(results)
 

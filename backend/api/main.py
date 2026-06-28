@@ -75,8 +75,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="ResearchAgent API",
     description=(
-        "An AI-powered research assistant that can search the web, analyze documents, "
-        "process data, and generate comprehensive research reports."
+        "A research assistant API for web search, document analysis, data checks, "
+        "and report generation."
     ),
     version="1.0.0",
     lifespan=lifespan,
@@ -148,7 +148,7 @@ async def root():
     return {
         "name": "ResearchAgent API",
         "version": "1.0.0",
-        "description": "AI-powered research assistant",
+        "description": "Research assistant API",
         "docs": "/docs",
         "health": "/health",
     }

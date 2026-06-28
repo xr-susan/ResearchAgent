@@ -68,7 +68,7 @@ class ResearchAgent(BaseAgent):
 
     def _research_system_prompt(self) -> str:
         """Get the research-specific system prompt."""
-        return """You are ResearchAgent, an advanced AI research assistant specialized in conducting thorough research and analysis.
+        return """You are ResearchAgent, a research assistant focused on clear sourcing and careful analysis.
 
 ## Your Core Capabilities
 
@@ -78,9 +78,7 @@ class ResearchAgent(BaseAgent):
 4. **Data Analysis**: Perform statistical analysis, trend detection, and data visualization
 5. **Report Generation**: Create structured research reports in Markdown or PDF
 
-## Research Methodology
-
-When conducting research, follow this methodology:
+## Research Method
 
 ### 1. Understand the Research Question
 - Clarify the scope and objectives
@@ -113,14 +111,14 @@ When conducting research, follow this methodology:
 - **data_analysis**: Use for CSV/Excel data to find patterns, statistics, and generate charts.
 - **report_generator**: Use to compile findings into a structured report when requested.
 
-## Important Rules
+## Ground Rules
 
 1. Always verify information from multiple sources when possible
 2. Clearly distinguish between facts, analysis, and speculation
 3. Acknowledge limitations in available data
 4. When data conflicts, present both perspectives
 5. Use specific numbers and statistics rather than vague statements
-6. Structure complex findings with clear headings and sections
+6. Use concise headings when the answer is complex
 """
 
     async def plan(self, task: str) -> list[str]:
@@ -150,6 +148,9 @@ Format: Return ONLY a JSON array of strings, e.g. ["Step 1...", "Step 2..."]
 """
 
         try:
+            if not self.llm:
+                raise RuntimeError("No LLM is configured")
+
             response = await self.llm.ainvoke([HumanMessage(content=planning_prompt)])
             # Parse the response as a JSON array
             content = response.content.strip()
@@ -176,7 +177,7 @@ Format: Return ONLY a JSON array of strings, e.g. ["Step 1...", "Step 2..."]
         ]
 
     async def conduct_research(self, topic: str, depth: str = "standard") -> str:
-        """Conduct a comprehensive research session.
+        """Conduct a research session.
 
         This is a high-level method that plans and executes a full research workflow.
 
@@ -185,7 +186,7 @@ Format: Return ONLY a JSON array of strings, e.g. ["Step 1...", "Step 2..."]
             depth: Research depth - 'quick', 'standard', or 'deep'.
 
         Returns:
-            Comprehensive research findings.
+            Research findings.
         """
         logger.info(f"Starting research: {topic} (depth={depth})")
 
@@ -194,7 +195,7 @@ Format: Return ONLY a JSON array of strings, e.g. ["Step 1...", "Step 2..."]
         self.max_iterations = depth_iterations.get(depth, 10)
 
         # Build a research-focused prompt
-        research_prompt = f"""Conduct a thorough research investigation on the following topic:
+        research_prompt = f"""Research the following topic:
 
 **Topic:** {topic}
 
@@ -204,7 +205,7 @@ Please:
 1. Search for current and relevant information
 2. Scrape detailed content from authoritative sources
 3. Analyze findings and identify key insights
-4. Synthesize information into a comprehensive summary
+4. Synthesize the findings into a readable summary
 
 Provide your findings with proper citations and source URLs.
 """
@@ -242,7 +243,7 @@ use the data_analysis tool for deeper analysis.
         Returns:
             Report generation result with file path.
         """
-        prompt = f"""Generate a comprehensive research report on: {topic}
+        prompt = f"""Generate a research report on: {topic}
 
 Use the following findings to create the report:
 

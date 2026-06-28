@@ -93,6 +93,9 @@ class ConversationMemory:
 
     async def add_assistant_message(self, content: str, metadata: dict | None = None) -> dict:
         """Add an assistant message to the current conversation."""
+        if not self._current_conversation_id:
+            await self.start_conversation()
+
         msg = await self.storage.add_message(
             self._current_conversation_id, "assistant", content, metadata=metadata
         )
@@ -101,6 +104,9 @@ class ConversationMemory:
 
     async def add_tool_message(self, tool_name: str, content: str, tool_call_id: Optional[str] = None) -> dict:
         """Add a tool result message to the current conversation."""
+        if not self._current_conversation_id:
+            await self.start_conversation()
+
         msg = await self.storage.add_message(
             self._current_conversation_id, "tool", content,
             tool_call_id=tool_call_id, tool_name=tool_name
