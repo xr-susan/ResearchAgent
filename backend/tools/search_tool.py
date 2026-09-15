@@ -11,7 +11,7 @@ from datetime import datetime
 from typing import Any, Optional
 
 import requests
-from langchain.tools import BaseTool
+from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field
 
 from backend.memory.storage import StorageManager

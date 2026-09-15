@@ -1,5 +1,11 @@
 # ResearchAgent
 
+[![CI](https://github.com/xr-susan/ResearchAgent/actions/workflows/ci.yml/badge.svg)](https://github.com/xr-susan/ResearchAgent/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.11%2B-3776ab.svg)](https://www.python.org/)
+[![React](https://img.shields.io/badge/React-18-61dafb.svg)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-8-646cff.svg)](https://vitejs.dev/)
+
 ResearchAgent is a small research assistant project with a FastAPI backend, a React chat UI, and a CLI. It can search the web, read local files, inspect tabular data, and turn findings into Markdown or PDF reports.
 
 The project is meant to be easy to run locally and easy to extend. It does not hide setup behind a hosted service: you bring an OpenAI or Anthropic API key, choose the search backend, and keep the generated data on your machine.
@@ -15,6 +21,18 @@ The project is meant to be easy to run locally and easy to extend. It does not h
 - SQLite storage for conversations, tasks, memory, and search cache
 - CLI for quick terminal use
 - React frontend for a simple browser chat experience
+
+## Screenshots
+
+The repository does not ship screenshots yet. To add them, start the backend and frontend
+locally, capture the screens below, and place the files in `docs/screenshots/`:
+
+| Suggested filename | Screen |
+| --- | --- |
+| `docs/screenshots/chat-empty.png` | Empty chat view with the suggestion chips |
+| `docs/screenshots/chat-conversation.png` | A conversation showing rendered Markdown output |
+| `docs/screenshots/api-docs.png` | FastAPI's `/docs` page |
+| `docs/screenshots/cli.png` | The CLI in interactive mode |
 
 ## Project Layout
 
@@ -33,8 +51,8 @@ ResearchAgent/
 
 ## Requirements
 
-- Python 3.10+
-- Node.js 18+ if you want to run the frontend
+- Python 3.11+
+- Node.js 20.19+ or 22.12+ if you want to run the frontend (required by Vite 8)
 - An OpenAI API key or Anthropic API key for model-backed answers
 
 ## Backend Setup
@@ -72,7 +90,8 @@ Start the API:
 uvicorn backend.api.main:app --reload --port 8000
 ```
 
-Open the API docs at `http://localhost:8000/docs`.
+Open the API docs at `http://localhost:8000/docs`. A `GET /health` endpoint is available
+for liveness checks and is what the container health check uses.
 
 ## Frontend Setup
 
@@ -82,11 +101,22 @@ npm install
 npm run dev
 ```
 
+The dev server runs on `http://localhost:3000` and proxies `/api` to `http://localhost:8000`.
+
 By default, the UI talks to `http://localhost:8000/api`. To point it somewhere else, create `frontend/.env`:
 
 ```env
 VITE_API_BASE=http://localhost:8000/api
 ```
+
+Other frontend scripts:
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Start the Vite dev server |
+| `npm run build` | Typecheck with `tsc`, then build to `dist/` |
+| `npm run typecheck` | Typecheck without emitting |
+| `npm run preview` | Serve the production build locally |
 
 ## CLI Usage
 
@@ -178,7 +208,12 @@ print(analysis.json()["analysis"])
 pytest
 ```
 
-The tests use temporary SQLite databases and do not require a model API key for schema and storage checks.
+`pytest.ini` pins `testpaths` to `backend/tests` and enables asyncio auto mode. The tests
+use temporary SQLite databases and do not require a model API key for schema and storage
+checks.
+
+CI runs the backend suite on Python 3.11 and 3.12, and separately typechecks and builds
+the frontend — see [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 
 ## Notes
 
@@ -188,4 +223,4 @@ The tests use temporary SQLite databases and do not require a model API key for 
 
 ## License
 
-MIT
+[MIT](LICENSE)

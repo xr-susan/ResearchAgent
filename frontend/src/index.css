@@ -1,0 +1,98 @@
+/*
+ * Minimal global reset.
+ *
+ * The UI itself is styled with inline style objects, so this file only removes
+ * the browser defaults that would otherwise break the layout: the default body
+ * margin fights the full-height (100vh) flex column, and the default table /
+ * pre / code styling makes rendered Markdown look out of place inside the
+ * assistant bubble.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: #f8fafc;
+  color: #1e293b;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Rendered Markdown inside assistant bubbles */
+pre {
+  overflow-x: auto;
+  margin: 0.75em 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background-color: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.875em;
+}
+
+pre code {
+  padding: 0;
+  background: none;
+  color: inherit;
+}
+
+code {
+  padding: 0.15em 0.35em;
+  border-radius: 4px;
+  background-color: rgba(15, 23, 42, 0.07);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.875em;
+}
+
+blockquote {
+  margin: 0.75em 0;
+  padding-left: 12px;
+  border-left: 3px solid #cbd5e1;
+  color: #475569;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875em;
+}
+
+th,
+td {
+  padding: 6px 10px;
+  border: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+th {
+  background-color: #f1f5f9;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: #2563eb;
+}
+
+/* Respect users who prefer reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
